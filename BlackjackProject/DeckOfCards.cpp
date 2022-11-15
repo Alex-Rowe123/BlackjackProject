@@ -49,7 +49,7 @@ void DeckOfCards::ShuffleDeck(int _ShuffleResolution,Card _Deck[])
 
 }
 
-void Players::DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole)
+void Players::DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole, bool _bShowDealerValue)
 {
 	const char SuitDictionary[4][8] = { "Club", "Spade", "Diamond", "Heart" };
 	const char ValueDictionary[13][6] = { "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace" };
@@ -60,8 +60,13 @@ void Players::DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole)
 	for (int i{ 0 }; i < _DealerInfo.NumOfCards; i++)
 	{
 		if (_bShowHole == false and i == 0) { std::cout << "Hole Card\t"; } // if debug mode is false hide the first card in hand
-		else { std::cout << ValueDictionary[_DealerInfo.Hand[i].CardRank] << " of " << SuitDictionary[_DealerInfo.Hand[i].Suit] << "s\t"; }
+		else { std::cout << ValueDictionary[_DealerInfo.Hand[i].CardRank] << " of " << SuitDictionary[_DealerInfo.Hand[i].Suit] << "s" << std::setw(10); }
 		if (!(i % 2)) { std::cout << '\n'; } // create grid
+	}
+
+	if (_bShowDealerValue)
+	{
+		std::cout << "\n\nThe dealers card value is: " << _DealerInfo.HandValue << '\n';
 	}
 
 	/* Display the players info */
@@ -69,7 +74,7 @@ void Players::DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole)
 	
 	for (int i{ 0 }; i < _PlayerInfo.NumOfCards; i++)
 	{
-		std::cout << ValueDictionary[_PlayerInfo.Hand[i].CardRank] << " of " << SuitDictionary[_PlayerInfo.Hand[i].Suit] << "s\t";
+		std::cout << ValueDictionary[_PlayerInfo.Hand[i].CardRank] << " of " << SuitDictionary[_PlayerInfo.Hand[i].Suit] << "s" << std::setw(10);
 		if ((i % 2)) { std::cout << '\n'; } // create grid
 	}
 

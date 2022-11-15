@@ -1,6 +1,11 @@
 #include "DeckOfCards.h"
 #include <iomanip>
+#include <windows.h>
 #include <ctime>
+/*Change console text color*/
+#define REDTEXT system("Color 04");
+#define WHITETEXT system("Color 0F");
+#define GREENTEXT system("Color 0A");
 
 namespace dc = DeckOfCards;
 
@@ -96,11 +101,11 @@ void BeginPlay(bool _bShowHole)
 		/* Betting phase */
 		do
 		{
-			std::cout << "\n\nInput your bet: ";
+			std::cout << "\nInput your bet: ";
 			std::cin >> PlayerInfo.CurrentBet;
 			if (PlayerInfo.CurrentBet <= 0 or PlayerInfo.CurrentBet > PlayerInfo.MoneyPot)
 			{
-				std::cout << "\n\nThat is not a valid bet\n";
+				std::cout << "\nThat is not a valid bet\n";
 			}
 		} while (PlayerInfo.CurrentBet <= 0 or PlayerInfo.CurrentBet > PlayerInfo.MoneyPot);
 
@@ -122,9 +127,10 @@ void BeginPlay(bool _bShowHole)
 			do
 			{
 				/* Player chooses whether to Stand or Hit */
-				Players::DisplayInfo(PlayerInfo, DealerInfo, _bShowHole);
+				Players::DisplayInfo(PlayerInfo, DealerInfo, _bShowHole , false);
 				std::cout << "1.Hit\t\t2.Stand\n";
 				std::cin >> input;
+				ClearScreen();
 				switch (input)
 				{
 				case 1: // Hit chosen
@@ -137,8 +143,10 @@ void BeginPlay(bool _bShowHole)
 					}
 					if (PlayerInfo.HandValue > 21) // if player is over 21
 					{
-						Players::DisplayInfo(PlayerInfo, DealerInfo, _bShowHole);
-						std::cout << "\n\nYou lost!!\n1.Continue\n2.Quit To Main Menu\n";
+						Players::DisplayInfo(PlayerInfo, DealerInfo, true, true);
+						REDTEXT;
+						std::cout << "\n\nYou lost!!";
+						std::cout << "\n1.Continue\n2.Quit To Main Menu\n";
 						std::cin >> input; // player inputs whether to play again or quit to menu
 						do
 						{
@@ -148,6 +156,7 @@ void BeginPlay(bool _bShowHole)
 								bPlaying = false;
 							case 1: // quit
 								bLost = true;
+								WHITETEXT;
 								break;
 							}
 						} while (input != 1 and input != 2);
@@ -160,8 +169,6 @@ void BeginPlay(bool _bShowHole)
 				}
 			} while (input != 2 and !bLost);
 
-			_bShowHole = true;
-
 			if (!bLost)
 			{
 				/* Dealer AI, If under 17 then it will hit, otherwise they will stand */
@@ -171,17 +178,19 @@ void BeginPlay(bool _bShowHole)
 					DeckLength--;
 				}
 
-				Players::DisplayInfo(PlayerInfo, DealerInfo, _bShowHole);
+				Players::DisplayInfo(PlayerInfo, DealerInfo, true, true);
 
 				/* win if dealer busts or you have higher hand */
 				if (DealerInfo.HandValue < PlayerInfo.HandValue or DealerInfo.HandValue > 21)
 				{
+					GREENTEXT;
 					std::cout << "\n\nYou win!!\n";
 
 				}
 				/* lose if player has lower hand than dealer */
 				else if (DealerInfo.HandValue > PlayerInfo.HandValue)
 				{
+					REDTEXT;
 					std::cout << "\n\nYou lost!!\n";
 
 				}
@@ -201,6 +210,8 @@ void BeginPlay(bool _bShowHole)
 						bPlaying = false;
 					case 1: // continue
 						bLost = true;
+						WHITETEXT;
+						ClearScreen();
 						break;
 					default:
 						std::cout << "\nInvalid Choice. Try Again\n\n";
@@ -218,6 +229,6 @@ void BeginPlay(bool _bShowHole)
 
 void ClearScreen()
 {
-	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\b\b\b\b\b\b\b\b\b\b\b\b\b";
+	std::cout << "\033[2J\033[1;1H";
 }
 

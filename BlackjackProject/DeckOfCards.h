@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <iomanip>
 
 namespace DeckOfCards
 {
@@ -32,6 +33,6 @@ namespace Players
 		int NumOfCards{ 0 }; // how many cards in your hand
 		int AceCounter{ 0 }; // how many aces that have the value 11
 	};
-	void DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bDebug); // display important information about gamestate
+	void DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bDebug, bool _bShowDealerValue); // display important information about gamestate
 	void AddToHand(Info* _PlayerInfo, dc::Card _Card); // adds a card to the hand
 }
