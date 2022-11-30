@@ -1,11 +1,11 @@
 #include "DeckOfCards.h"
 
-void DeckOfCards::InitCardVariables(Card _Deck[4][13], Card _CopyDeck[52]) // This function sets the variables for all the data inside the card struct
+void InitCardVariables(Card _Deck[4][13]) // This function sets the variables for all the data inside the card struct
 {
 
-	for (int i{ 0 }, CardNum{ 0 }; i < 4; i++) // Loop through all possible suits. CardNum is to count the number of cards
+	for (int i{ 0 }; i < 4; i++) // Loop through all possible suits. CardNum is to count the number of cards
 	{
-		for (int j{ 0 }; j < 13; j++, CardNum++) // Loop through all possible ranks. Increment Cardnum
+		for (int j{ 0 }; j < 13; j++) // Loop through all possible ranks. Increment Cardnum
 		{
 			_Deck[i][j].Suit = SuitType(i); // Set the suit for the card struct
 			_Deck[i][j].CardRank = ValueTypes(j); // Set the rank for the card struct
@@ -22,15 +22,13 @@ void DeckOfCards::InitCardVariables(Card _Deck[4][13], Card _CopyDeck[52]) // Th
 			{
 				_Deck[i][j].ActualValue = 10;
 			}
-
-			_CopyDeck[CardNum] = _Deck[i][j]; // fills the copy _Deck with values from the _Deck array
 		}
 	}
 }
 
-void DeckOfCards::ShuffleDeck(int _ShuffleResolution,Card _Deck[])
+void ShuffleDeck(int _ShuffleResolution,int* _Deck)
 {
-	Card TempCard;
+	int temp;
 	for (int i{ 0 }; i < _ShuffleResolution; i++) // repeat shuffle
 	{
 		for (int j{ 0 }; j < 51; j++) // if random number is odd then swap the index with the one in front
@@ -40,16 +38,16 @@ void DeckOfCards::ShuffleDeck(int _ShuffleResolution,Card _Deck[])
 			if (randNum) // if randNum is odd number
 			{
 				/*Swaps array elements*/
-				TempCard = _Deck[j+1];
+				temp = _Deck[j+1];
 				_Deck[j + 1] = _Deck[j];
-				_Deck[j] = TempCard;
+				_Deck[j] = temp;
 			}
 		}
 	}
 
 }
 
-void Players::DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole, bool _bShowDealerValue)
+void DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole, bool _bShowDealerValue)
 {
 	const char SuitDictionary[4][8] = { "Club", "Spade", "Diamond", "Heart" };
 	const char ValueDictionary[13][6] = { "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace" };
@@ -81,12 +79,12 @@ void Players::DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole, b
 	std::cout << "\n\nYour total card value is: " << _PlayerInfo.HandValue << '\n';
 }
 
-void Players::AddToHand(Info* _PlayerInfo, dc::Card _Card)
+void AddToHand(Info* _PlayerInfo, Card _Card)
 {
 	_PlayerInfo->Hand[_PlayerInfo->NumOfCards] = _Card; // add card to hand
 	_PlayerInfo->NumOfCards++; // increase num of cards counter
 	_PlayerInfo->HandValue += _Card.ActualValue; // increase hand value
-	if (_Card.CardRank == dc::Ace)
+	if (_Card.CardRank == Ace)
 	{
 		_PlayerInfo->AceCounter++;
 	}

@@ -7,12 +7,11 @@
 #define WHITETEXT system("Color 0F");
 #define GREENTEXT system("Color 0A");
 
-namespace dc = DeckOfCards;
-
 void MainMenu();
 void InstructionsMenu();
-void BeginPlay(bool _bShowHole);
+void BeginPlay(bool _bDebug);
 void ClearScreen();
+void Shrink(int*& _array, int _size); // shrink is a function that takes a dynamic array and a desired size and shrinks the array to the desired size, discarding any extra elements
 
 int main()
 {
@@ -59,16 +58,16 @@ void InstructionsMenu()
 	MainMenu();
 }
 
-void BeginPlay(bool _bShowHole)
+void BeginPlay(bool _bDebug)
 {
 	// create card structs
-	dc::Card ClubAce, ClubTwo, ClubThree, ClubFour, ClubFive, ClubSix, ClubSeven, ClubEight, ClubNine, ClubTen, ClubJack, ClubQueen, ClubKing,
+	Card ClubAce, ClubTwo, ClubThree, ClubFour, ClubFive, ClubSix, ClubSeven, ClubEight, ClubNine, ClubTen, ClubJack, ClubQueen, ClubKing,
 		SpadeAce, SpadeTwo, SpadeThree, SpadeFour, SpadeFive, SpadeSix, SpadeSeven, SpadeEight, SpadeNine, SpadeTen, SpadeJack, SpadeQueen, SpadeKing,
 		DiamondAce, DiamondTwo, DiamondThree, DiamondFour, DiamondFive, DiamondSix, DiamondSeven, DiamondEight, DiamondNine, DiamondTen, DiamondJack, DiamondQueen, DiamondKing,
 		HeartAce, HeartTwo, HeartThree, HeartFour, HeartFive, HeartSix, HeartSeven, HeartEight, HeartNine, HeartTen, HeartJack, HeartQueen, HeartKing;
 
 	// create an array of all cards
-	dc::Card Deck[4][13] =
+	Card Deck[4][13] =
 	{
 		{ ClubTwo, ClubThree, ClubFour, ClubFive, ClubSix, ClubSeven, ClubEight, ClubNine, ClubTen, ClubJack, ClubQueen, ClubKing, ClubAce },
 		{ SpadeTwo, SpadeThree, SpadeFour, SpadeFive, SpadeSix, SpadeSeven, SpadeEight, SpadeNine, SpadeTen, SpadeJack, SpadeQueen, SpadeKing, SpadeAce },
@@ -76,19 +75,18 @@ void BeginPlay(bool _bShowHole)
 		{ HeartTwo, HeartThree, HeartFour, HeartFive, HeartSix, HeartSeven, HeartEight, HeartNine, HeartTen, HeartJack, HeartQueen, HeartKing, HeartAce }
 	};
 
-	dc::Card CopyDeck[52];// make an array that will copy all the values from the original deck. This is just so i dont mess with the original deck. probably could be changed
-	int DeckLength{ 51 }, input{ 0 }; // deck length is how many possible cards we can draw. input is just reused for menu inputs
-	Players::Info PlayerInfo, DealerInfo; // create info data structs for the player and the dealer
+	int input{ 0 }; // deckLen is length of CopyDeck array. input is just reused for menu inputs
+	Info PlayerInfo, DealerInfo; // create info data structs for the player and the dealer
 	PlayerInfo.MoneyPot = 100;
 	bool bPlaying{ true }, bLost{ false }; // bPlaying is for the whole game loop. bLost is for the hitting and standing loop
 
 	// start of actual gameplay
-	dc::InitCardVariables(Deck, CopyDeck);
+	InitCardVariables(Deck);
+
 
 	while (bPlaying)
 	{
 		// reset variables for game
-		DeckLength = 51;
 		PlayerInfo.NumOfCards = 0;
 		DealerInfo.NumOfCards = 0;
 		PlayerInfo.CurrentBet = 0;
@@ -97,6 +95,11 @@ void BeginPlay(bool _bShowHole)
 		PlayerInfo.HandValue = 0;
 		DealerInfo.HandValue = 0;
 		bLost = false;
+		int deckLen{ 51 };
+		/* pointDeck is a dynamic array with integers for its elements.these integers act as indecies for elements in the Deck array.
+		this allows me to change the size of the array and shuffle its elements without changing the data inside the original Deck array */
+		int* pointDeck = new int[52]
+		{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51 };
 
 		/* Betting phase */
 		do
@@ -109,33 +112,41 @@ void BeginPlay(bool _bShowHole)
 			}
 		} while (PlayerInfo.CurrentBet <= 0 or PlayerInfo.CurrentBet > PlayerInfo.MoneyPot);
 
-		/* Initial dealing of cards */
-		dc::ShuffleDeck(200, CopyDeck);
+		ShuffleDeck(200, pointDeck); // shuffling the cards
 
-		Players::AddToHand(&PlayerInfo, CopyDeck[DeckLength]);
-		DeckLength--;
-		Players::AddToHand(&PlayerInfo, CopyDeck[DeckLength]);
-		DeckLength--;
-		Players::AddToHand(&DealerInfo, CopyDeck[DeckLength]);
-		DeckLength--;
-		Players::AddToHand(&DealerInfo, CopyDeck[DeckLength]);
-		DeckLength--;
+		AddToHand(&PlayerInfo, Deck[pointDeck[deckLen - 3]/13][pointDeck[deckLen - 3]%13]); // adds card to the players hand. index stored in pointDeck is converted into 2d
+		AddToHand(&PlayerInfo, Deck[pointDeck[deckLen - 2]/13][pointDeck[deckLen - 2]%13]);
+		AddToHand(&DealerInfo, Deck[pointDeck[deckLen - 1]/13][pointDeck[deckLen - 1]%13]);
+		AddToHand(&DealerInfo, Deck[pointDeck[deckLen]/13][pointDeck[deckLen]%13]);
+		deckLen -= 3;
+		Shrink(*&pointDeck, deckLen);
 
 		/* Actual Play */
 		while (!bLost)
 		{
 			do
 			{
+				if (_bDebug) // if debug mode is on, print out the pointDeck
+				{
+					std::cout << '\n';
+					for (int i = 0; i < 52; i++)
+					{
+						std::cout << pointDeck[i] << ' ';
+					}
+					std::cout << '\n';
+				}
+
 				/* Player chooses whether to Stand or Hit */
-				Players::DisplayInfo(PlayerInfo, DealerInfo, _bShowHole , false);
+				DisplayInfo(PlayerInfo, DealerInfo, _bDebug , false);
 				std::cout << "1.Hit\t\t2.Stand\n";
 				std::cin >> input;
 				ClearScreen();
 				switch (input)
 				{
 				case 1: // Hit chosen
-					Players::AddToHand(&PlayerInfo, CopyDeck[DeckLength]);
-					DeckLength--;
+					AddToHand(&PlayerInfo, Deck[pointDeck[deckLen-1]/13][pointDeck[deckLen-1]%13]);
+					deckLen--;
+					Shrink(*&pointDeck, deckLen);
 					while (PlayerInfo.AceCounter > 0 and PlayerInfo.HandValue > 21) // if player has aces and is above 21, make them one until no aces left
 					{
 						PlayerInfo.AceCounter--;
@@ -143,7 +154,7 @@ void BeginPlay(bool _bShowHole)
 					}
 					if (PlayerInfo.HandValue > 21) // if player is over 21
 					{
-						Players::DisplayInfo(PlayerInfo, DealerInfo, true, true);
+						DisplayInfo(PlayerInfo, DealerInfo, true, true);
 						REDTEXT;
 						std::cout << "\n\nYou lost!!";
 						std::cout << "\n1.Continue\n2.Quit To Main Menu\n";
@@ -155,8 +166,10 @@ void BeginPlay(bool _bShowHole)
 							case 2: // continue
 								bPlaying = false;
 							case 1: // quit
+								delete[] pointDeck;
 								bLost = true;
 								WHITETEXT;
+								ClearScreen();
 								break;
 							}
 						} while (input != 1 and input != 2);
@@ -174,11 +187,13 @@ void BeginPlay(bool _bShowHole)
 				/* Dealer AI, If under 17 then it will hit, otherwise they will stand */
 				while (DealerInfo.HandValue < 17)
 				{
-					Players::AddToHand(&DealerInfo, CopyDeck[DeckLength]); // hitting
-					DeckLength--;
+					AddToHand(&DealerInfo, Deck[pointDeck[deckLen-1] / 13][pointDeck[deckLen-1] % 13]); // hitting
+					deckLen--;
+					Shrink(*&pointDeck, deckLen);
+
 				}
 
-				Players::DisplayInfo(PlayerInfo, DealerInfo, true, true);
+				DisplayInfo(PlayerInfo, DealerInfo, true, true);
 
 				/* win if dealer busts or you have higher hand */
 				if (DealerInfo.HandValue < PlayerInfo.HandValue or DealerInfo.HandValue > 21)
@@ -209,6 +224,7 @@ void BeginPlay(bool _bShowHole)
 					case 2: // quit
 						bPlaying = false;
 					case 1: // continue
+						delete[] pointDeck;
 						bLost = true;
 						WHITETEXT;
 						ClearScreen();
@@ -232,3 +248,13 @@ void ClearScreen()
 	std::cout << "\033[2J\033[1;1H";
 }
 
+void Shrink(int*& _array, int _size)
+{
+	int* tempArr = new int[_size] {}; // create new empty dynamic int array of _size
+	for (int i{ 0}; i < _size; i++) // copy contents of original array to new array
+	{
+		tempArr[i] = _array[i];
+	}
+	delete[] _array; // deallocates the elements of the original but keeps the pointer
+	_array = tempArr; // original array now points to the new array in the heap. tempArr doesnt need to be deleted as it will soon become out of scope
+}
