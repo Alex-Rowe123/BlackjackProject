@@ -119,7 +119,7 @@ void BeginPlay(bool _bDebug)
 		AddToHand(&DealerInfo, Deck[pointDeck[deckLen - 1]/13][pointDeck[deckLen - 1]%13]);
 		AddToHand(&DealerInfo, Deck[pointDeck[deckLen]/13][pointDeck[deckLen]%13]);
 		deckLen -= 3;
-		Shrink(*&pointDeck, deckLen);
+		Shrink(pointDeck, deckLen);
 
 		/* Actual Play */
 		while (!bLost)
@@ -146,7 +146,7 @@ void BeginPlay(bool _bDebug)
 				case 1: // Hit chosen
 					AddToHand(&PlayerInfo, Deck[pointDeck[deckLen-1]/13][pointDeck[deckLen-1]%13]);
 					deckLen--;
-					Shrink(*&pointDeck, deckLen);
+					Shrink(pointDeck, deckLen);
 					while (PlayerInfo.AceCounter > 0 and PlayerInfo.HandValue > 21) // if player has aces and is above 21, make them one until no aces left
 					{
 						PlayerInfo.AceCounter--;
@@ -189,7 +189,7 @@ void BeginPlay(bool _bDebug)
 				{
 					AddToHand(&DealerInfo, Deck[pointDeck[deckLen-1] / 13][pointDeck[deckLen-1] % 13]); // hitting
 					deckLen--;
-					Shrink(*&pointDeck, deckLen);
+					Shrink(pointDeck, deckLen);
 
 				}
 
@@ -251,10 +251,17 @@ void ClearScreen()
 void Shrink(int*& _array, int _size)
 {
 	int* tempArr = new int[_size] {}; // create new empty dynamic int array of _size
-	for (int i{ 0}; i < _size; i++) // copy contents of original array to new array
+	if (tempArr != nullptr)
 	{
-		tempArr[i] = _array[i];
+		for (int i{ 0 }; i < _size; i++) // copy contents of original array to new array
+		{
+			tempArr[i] = _array[i];
+		}
+		delete[] _array; // removes the elements of the original but keeps the pointer
+		_array = tempArr; // original array now points to the new array in the heap. tempArr doesnt need to be deleted as it will soon become out of scope
 	}
-	delete[] _array; // deallocates the elements of the original but keeps the pointer
-	_array = tempArr; // original array now points to the new array in the heap. tempArr doesnt need to be deleted as it will soon become out of scope
+	else
+	{
+		std::cout << "\n\nNot enough memory to copy array, please try restart the program\n\n";
+	}
 }

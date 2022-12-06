@@ -44,7 +44,6 @@ void ShuffleDeck(int _ShuffleResolution,int* _Deck)
 			}
 		}
 	}
-
 }
 
 void DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole, bool _bShowDealerValue)
