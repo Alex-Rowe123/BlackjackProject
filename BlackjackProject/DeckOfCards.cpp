@@ -47,6 +47,14 @@ void ShuffleDeck(int _ShuffleResolution,int* _Deck)
 
 }
 
+void WrapDeck(int* _Deck) // moves the deck one place forward, the end element is put in [0]
+{
+	for (int i{ 0 }, j{51}; i <= 51; i++, j--)
+	{
+		_Deck[j] = (++_Deck[j]) % 52;
+	}
+}
+
 void DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole, bool _bShowDealerValue)
 {
 	const char SuitDictionary[4][8] = { "Club", "Spade", "Diamond", "Heart" };

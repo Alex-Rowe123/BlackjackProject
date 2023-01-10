@@ -11,7 +11,6 @@ void MainMenu();
 void InstructionsMenu();
 void BeginPlay(bool _bDebug);
 void ClearScreen();
-void Shrink(int*& _array, int _size); // shrink is a function that takes a dynamic array and a desired size and shrinks the array to the desired size, discarding any extra elements
 
 int main()
 {
@@ -80,6 +79,13 @@ void BeginPlay(bool _bDebug)
 	PlayerInfo.MoneyPot = 100;
 	bool bPlaying{ true }, bLost{ false }; // bPlaying is for the whole game loop. bLost is for the hitting and standing loop
 
+	/* these integers act as indecies for elements in the Deck array.
+	this allows me to shuffle its elements without changing the data inside the original Deck array */
+	int pointDeck[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51 };
+
+	ShuffleDeck(200, pointDeck); // shuffling the cards
+
+
 	// start of actual gameplay
 	InitCardVariables(Deck);
 
@@ -96,10 +102,6 @@ void BeginPlay(bool _bDebug)
 		DealerInfo.HandValue = 0;
 		bLost = false;
 		int deckLen{ 51 };
-		/* pointDeck is a dynamic array with integers for its elements.these integers act as indecies for elements in the Deck array.
-		this allows me to change the size of the array and shuffle its elements without changing the data inside the original Deck array */
-		int* pointDeck = new int[52]
-		{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51 };
 
 		/* Betting phase */
 		do
@@ -112,18 +114,20 @@ void BeginPlay(bool _bDebug)
 			}
 		} while (PlayerInfo.CurrentBet <= 0 or PlayerInfo.CurrentBet > PlayerInfo.MoneyPot);
 
-		ShuffleDeck(200, pointDeck); // shuffling the cards
+		AddToHand(&PlayerInfo, Deck[0][pointDeck[0]]); // adds card to the players hand. The Card input is the the element of Deck at the first element in pointDeck
+		WrapDeck(pointDeck);						   // takes the top card and puts it at the back of the deck.
+		AddToHand(&PlayerInfo, Deck[0][pointDeck[0]]);
+		WrapDeck(pointDeck);
+		AddToHand(&DealerInfo, Deck[0][pointDeck[0]]);
+		WrapDeck(pointDeck);
+		AddToHand(&DealerInfo, Deck[0][pointDeck[0]]);
+		WrapDeck(pointDeck);
 
-		AddToHand(&PlayerInfo, Deck[pointDeck[deckLen - 3]/13][pointDeck[deckLen - 3]%13]); // adds card to the players hand. index stored in pointDeck is converted into 2d
-		AddToHand(&PlayerInfo, Deck[pointDeck[deckLen - 2]/13][pointDeck[deckLen - 2]%13]);
-		AddToHand(&DealerInfo, Deck[pointDeck[deckLen - 1]/13][pointDeck[deckLen - 1]%13]);
-		AddToHand(&DealerInfo, Deck[pointDeck[deckLen]/13][pointDeck[deckLen]%13]);
-		deckLen -= 3;
-		Shrink(*&pointDeck, deckLen);
 
 		/* Actual Play */
 		while (!bLost)
 		{
+			bool finish = false;
 			do
 			{
 				if (_bDebug) // if debug mode is on, print out the pointDeck
@@ -141,69 +145,56 @@ void BeginPlay(bool _bDebug)
 				std::cout << "1.Hit\t\t2.Stand\n";
 				std::cin >> input;
 				ClearScreen();
+
 				switch (input)
 				{
 				case 1: // Hit chosen
-					AddToHand(&PlayerInfo, Deck[pointDeck[deckLen-1]/13][pointDeck[deckLen-1]%13]);
+					AddToHand(&PlayerInfo, Deck[0][pointDeck[0]]);
+					WrapDeck(pointDeck);
 					deckLen--;
-					Shrink(*&pointDeck, deckLen);
 					while (PlayerInfo.AceCounter > 0 and PlayerInfo.HandValue > 21) // if player has aces and is above 21, make them one until no aces left
 					{
 						PlayerInfo.AceCounter--;
 						PlayerInfo.HandValue -= 10;
 					}
-					if (PlayerInfo.HandValue > 21) // if player is over 21
+					if (PlayerInfo.HandValue > 21)
 					{
-						DisplayInfo(PlayerInfo, DealerInfo, true, true);
-						REDTEXT;
-						std::cout << "\n\nYou lost!!";
-						std::cout << "\n1.Continue\n2.Quit To Main Menu\n";
-						std::cin >> input; // player inputs whether to play again or quit to menu
-						do
-						{
-							switch (input)
-							{
-							case 2: // continue
-								bPlaying = false;
-							case 1: // quit
-								delete[] pointDeck;
-								bLost = true;
-								WHITETEXT;
-								ClearScreen();
-								break;
-							}
-						} while (input != 1 and input != 2);
+						finish = true;
+						break;
 					}
+
 				case 2: // Stand chosen
+					finish = true;
 					break;
+
 				default: // Invalid input
 					std::cout << "\nInvalid Choice. Try Again\n\n";
 					break;
 				}
-			} while (input != 2 and !bLost);
+
+			} while (!finish);
 
 			if (!bLost)
 			{
 				/* Dealer AI, If under 17 then it will hit, otherwise they will stand */
-				while (DealerInfo.HandValue < 17)
+				while (DealerInfo.HandValue < 17 and PlayerInfo.HandValue < 21)
 				{
-					AddToHand(&DealerInfo, Deck[pointDeck[deckLen-1] / 13][pointDeck[deckLen-1] % 13]); // hitting
+					AddToHand(&DealerInfo, Deck[0][pointDeck[0]]); // hitting
+					WrapDeck(pointDeck);
 					deckLen--;
-					Shrink(*&pointDeck, deckLen);
-
 				}
 
 				DisplayInfo(PlayerInfo, DealerInfo, true, true);
 
 				/* win if dealer busts or you have higher hand */
-				if (DealerInfo.HandValue < PlayerInfo.HandValue or DealerInfo.HandValue > 21)
+				if ((DealerInfo.HandValue < PlayerInfo.HandValue or DealerInfo.HandValue > 21) and PlayerInfo.HandValue <= 21)
 				{
 					GREENTEXT;
 					std::cout << "\n\nYou win!!\n";
 
 				}
 				/* lose if player has lower hand than dealer */
-				else if (DealerInfo.HandValue > PlayerInfo.HandValue)
+				else if (DealerInfo.HandValue > PlayerInfo.HandValue or PlayerInfo.HandValue > 21)
 				{
 					REDTEXT;
 					std::cout << "\n\nYou lost!!\n";
@@ -224,7 +215,6 @@ void BeginPlay(bool _bDebug)
 					case 2: // quit
 						bPlaying = false;
 					case 1: // continue
-						delete[] pointDeck;
 						bLost = true;
 						WHITETEXT;
 						ClearScreen();
@@ -246,15 +236,4 @@ void BeginPlay(bool _bDebug)
 void ClearScreen()
 {
 	std::cout << "\033[2J\033[1;1H";
-}
-
-void Shrink(int*& _array, int _size)
-{
-	int* tempArr = new int[_size] {}; // create new empty dynamic int array of _size
-	for (int i{ 0}; i < _size; i++) // copy contents of original array to new array
-	{
-		tempArr[i] = _array[i];
-	}
-	delete[] _array; // deallocates the elements of the original but keeps the pointer
-	_array = tempArr; // original array now points to the new array in the heap. tempArr doesnt need to be deleted as it will soon become out of scope
 }
