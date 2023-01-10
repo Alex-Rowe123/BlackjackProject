@@ -16,6 +16,8 @@ struct Card
 	
 void InitCardVariables(Card _Deck[4][13]); // sets up the deck with appropriate and unique values (basically fills in details for every card in a deck)
 void ShuffleDeck(int _ShuffleResolution, int* _Deck); // This Function shuffles the _Deck around. Increase shuffle resolution for more randomness
+void WrapDeck(int* _Deck); /* takes the top cardand puts it at the back of the deck.
+						   YES i know that technically the cards should be taken out but the max amount of cards both the dealerand player can have is so low that there is never a situation where this could happen besides a situation relying on another bug.*/
 
 
 
