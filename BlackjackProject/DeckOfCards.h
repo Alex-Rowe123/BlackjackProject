@@ -8,28 +8,58 @@ enum ValueTypes { Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Qu
 
 struct Card
 {
-	char NameOfCard[10] = {0}; // Name of the card as a null terminated char array. 10 value is random
 	SuitType Suit{ Club }; // the suit of the card
 	ValueTypes CardRank{ Two }; // the rank of the card
 	int ActualValue{ 0 }; // the actual value of the card
 };
 	
-void InitCardVariables(Card _Deck[4][13]); // sets up the deck with appropriate and unique values (basically fills in details for every card in a deck)
-void ShuffleDeck(int _ShuffleResolution, int* _Deck); // This Function shuffles the _Deck around. Increase shuffle resolution for more randomness
-void WrapDeck(int* _Deck); /* takes the top cardand puts it at the back of the deck.
-						   YES i know that technically the cards should be taken out but the max amount of cards both the dealerand player can have is so low that there is never a situation where this could happen besides a situation relying on another bug.*/
+
+/// <summary>
+/// Takes the Deck and initializes all the values to be the correct suit and rank.
+/// </summary>
+/// <param name="_Deck"></param>
+void InitCardVariables(Card _Deck[4][13]);
+
+/// <summary>
+/// Takes the deck and shuffles it. The _ShuffleResolution decides how many times the algorithm should run.
+/// Ive found 200 is a good number.
+/// </summary>
+/// <param name="_ShuffleResolution"></param>
+/// <param name="_Deck"></param>
+void ShuffleDeck(int _ShuffleResolution, int* _Deck);
+
+/// <summary>
+/// Moves the elements in the deck one index forward and takes the final element and moves it to index 0
+/// </summary>
+/// <param name="_Deck"></param>
+void WrapDeck(int* _Deck);
 
 
 
 
 struct Info
 {
-	Card Hand[10]; // 10 is random number. Unlinkely that your hand will reach this number of cards
-	int MoneyPot{ 0 }; // how much money the player has (Dealer also has this value but its unused. Could really use some classes :p)
+	Card Hand[12]; // 12 is the maximum amount of cards someone could get in a game of blackjack with one deck
+	int MoneyPot{ 0 }; // how much money the player has
 	int HandValue{ 0 }; // how much all the card values add up to
 	int CurrentBet{ 0 }; // how much you are currently betting
 	int NumOfCards{ 0 }; // how many cards in your hand
 	int AceCounter{ 0 }; // how many aces that have the value 11
 };
-void DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bDebug, bool _bShowDealerValue); // display important information about gamestate
-void AddToHand(Info* _PlayerInfo, Card _Card); // adds a card to the hand
+
+/// <summary>
+/// Takes the info structs for both the player and dealer and displays its contents to the screen.
+/// The _bShowHole shows the dealers hole card and _bShowDealerValue shows the dealers hand value
+/// </summary>
+/// <param name="_PlayerInfo"></param>
+/// <param name="_DealerInfo"></param>
+/// <param name="_bShowHole"></param>
+/// <param name="_bShowDealerValue"></param>
+void DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bDebug, bool _bShowDealerValue);
+
+/// <summary>
+/// Takes the _Card input and adds it onto the end of the _PlayerInfo.Hand array
+/// </summary>
+/// <param name= "_PlayerInfo" ></param>
+/// <param name= "_Card" > </param>
+void AddToHand(Info* _PlayerInfo, Card _Card);

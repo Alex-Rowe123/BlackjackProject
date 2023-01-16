@@ -5,7 +5,7 @@ void InitCardVariables(Card _Deck[4][13]) // This function sets the variables fo
 
 	for (int i{ 0 }; i < 4; i++) // Loop through all possible suits. CardNum is to count the number of cards
 	{
-		for (int j{ 0 }; j < 13; j++) // Loop through all possible ranks. Increment Cardnum
+		for (int j{ 0 }; j < 13; j++) // Loop through all possible ranks. Increment CardNum
 		{
 			_Deck[i][j].Suit = SuitType(i); // Set the suit for the card struct
 			_Deck[i][j].CardRank = ValueTypes(j); // Set the rank for the card struct
@@ -26,7 +26,8 @@ void InitCardVariables(Card _Deck[4][13]) // This function sets the variables fo
 	}
 }
 
-void ShuffleDeck(int _ShuffleResolution,int* _Deck)
+
+void ShuffleDeck(int _ShuffleResolution, int* _Deck)
 {
 	int temp;
 	for (int i{ 0 }; i < _ShuffleResolution; i++) // repeat shuffle
@@ -47,7 +48,7 @@ void ShuffleDeck(int _ShuffleResolution,int* _Deck)
 
 }
 
-void WrapDeck(int* _Deck) // moves the deck one place forward, the end element is put in [0]
+void WrapDeck(int* _Deck)
 {
 	for (int i{ 0 }, j{51}; i <= 51; i++, j--)
 	{
@@ -55,19 +56,32 @@ void WrapDeck(int* _Deck) // moves the deck one place forward, the end element i
 	}
 }
 
+
 void DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole, bool _bShowDealerValue)
 {
+	/* these dictionaries allign with the number values in the deck.
+	It allows you to translate the card index into its respective name without a switch statement or a member in the card struct*/
 	const char SuitDictionary[4][8] = { "Club", "Spade", "Diamond", "Heart" };
 	const char ValueDictionary[13][6] = { "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace" };
 
-	/* Display the dealers info */
+/* Display the dealers info */
 	std::cout << "\nDealers Hand:\n";
 	
+	/* iterate through the dealers hand, printing the name of each card to the screen except their hole card (unless using debug mode) */
 	for (int i{ 0 }; i < _DealerInfo.NumOfCards; i++)
 	{
-		if (_bShowHole == false and i == 0) { std::cout << "Hole Card\t"; } // if debug mode is false hide the first card in hand
-		else { std::cout << ValueDictionary[_DealerInfo.Hand[i].CardRank] << " of " << SuitDictionary[_DealerInfo.Hand[i].Suit] << "s" << std::setw(10); }
-		if (!(i % 2)) { std::cout << '\n'; } // create grid
+		if (_bShowHole == false and i == 0)  // if debug mode is false hide the first card in hand
+		{
+			std::cout << "Hole Card\t"; 
+		}
+		else
+		{
+			std::cout << ValueDictionary[_DealerInfo.Hand[i].CardRank] << " of " << SuitDictionary[_DealerInfo.Hand[i].Suit] << "s" << std::setw(10); 
+		}
+		if (!(i % 2))// create grid (2 x n grid)
+		{
+			std::cout << '\n';
+		}
 	}
 
 	if (_bShowDealerValue)
@@ -75,13 +89,17 @@ void DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole, bool _bSho
 		std::cout << "\n\nThe dealers card value is: " << _DealerInfo.HandValue << '\n';
 	}
 
-	/* Display the players info */
+/* Display the players info */
 	std::cout << "\n\n\nYour money: " << _PlayerInfo.MoneyPot << "\t\tYour current bet: " << _PlayerInfo.CurrentBet << '\n' << "Your Hand:\n";
-	
+
+	/* iterate through the players hand, printing the name of each card to the screen */
 	for (int i{ 0 }; i < _PlayerInfo.NumOfCards; i++)
 	{
 		std::cout << ValueDictionary[_PlayerInfo.Hand[i].CardRank] << " of " << SuitDictionary[_PlayerInfo.Hand[i].Suit] << "s" << std::setw(10);
-		if ((i % 2)) { std::cout << '\n'; } // create grid
+		if ((i % 2)) // create grid (2 x n grid)
+		{
+			std::cout << '\n'; 
+		}
 	}
 
 	std::cout << "\n\nYour total card value is: " << _PlayerInfo.HandValue << '\n';
@@ -89,7 +107,7 @@ void DisplayInfo(Info _PlayerInfo, Info _DealerInfo, bool _bShowHole, bool _bSho
 
 void AddToHand(Info* _PlayerInfo, Card _Card)
 {
-	_PlayerInfo->Hand[_PlayerInfo->NumOfCards] = _Card; // add card to hand
+	_PlayerInfo->Hand[_PlayerInfo->NumOfCards] = _Card; // add _Card value to _PlayerInfo hand
 	_PlayerInfo->NumOfCards++; // increase num of cards counter
 	_PlayerInfo->HandValue += _Card.ActualValue; // increase hand value
 	if (_Card.CardRank == Ace)
